@@ -1,13 +1,10 @@
-
-
 FROM java:7
 
-
-MAINTAINER Wellington Marinho wpmarinho@globo.com
+MAINTAINER Firespring "info.dev@firespring.com"
 
 # Init ENV
-ENV BISERVER_VERSION 5.4
-ENV BISERVER_TAG 5.4.0.1-130
+ENV BISERVER_VERSION 4.8.0-stable
+ENV BISERVER_TAG 4.8.0-stable
 
 ENV PENTAHO_HOME /opt/pentaho
 
@@ -18,7 +15,7 @@ ENV PENTAHO_JAVA_HOME /usr/lib/jvm/java-1.7.0-openjdk-amd64
 ENV JAVA_HOME /usr/lib/jvm/java-1.7.0-openjdk-amd64
 
 # Install Dependences
-RUN apt-get update; apt-get install zip netcat -y; \
+RUN apt-get update; apt-get install zip netcat supervisor -y; \
     apt-get install wget unzip git postgresql-client-9.4 vim -y; \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*; \
     curl -O https://bootstrap.pypa.io/get-pip.py; \
@@ -27,8 +24,6 @@ RUN apt-get update; apt-get install zip netcat -y; \
     rm -f get-pip.py
 
 RUN mkdir ${PENTAHO_HOME}; useradd -s /bin/bash -d ${PENTAHO_HOME} pentaho; chown pentaho:pentaho ${PENTAHO_HOME}
-
-USER pentaho
 
 # Download Pentaho BI Server
 RUN /usr/bin/wget --progress=dot:giga http://downloads.sourceforge.net/project/pentaho/Business%20Intelligence%20Server/${BISERVER_VERSION}/biserver-ce-${BISERVER_TAG}.zip -O /tmp/biserver-ce-${BISERVER_TAG}.zip; \
@@ -39,7 +34,9 @@ RUN /usr/bin/wget --progress=dot:giga http://downloads.sourceforge.net/project/p
 
 COPY config $PENTAHO_HOME/config
 COPY scripts $PENTAHO_HOME/scripts
+COPY supervisor/conf.d/* /etc/supervisor/conf.d/
+RUN chmod 775 $PENTAHO_HOME/biserver-ce/tomcat/bin/*.sh $PENTAHO_HOME/administration-console/*.sh
 
 WORKDIR /opt/pentaho 
-EXPOSE 8080 
-CMD ["sh", "scripts/run.sh"]
+EXPOSE 8080  8099
+CMD ["/usr/bin/supervisord"]
