@@ -31,6 +31,7 @@ RUN /usr/bin/wget --progress=dot:giga http://downloads.sourceforge.net/project/p
     rm -f /tmp/biserver-ce-${BISERVER_TAG}.zip $PENTAHO_HOME/biserver-ce/promptuser.sh; \
     sed -i -e 's/\(exec ".*"\) start/\1 run/' $PENTAHO_HOME/biserver-ce/tomcat/bin/startup.sh; \
     chmod +x $PENTAHO_HOME/biserver-ce/start-pentaho.sh
+RUN ln -s /opt/pentaho/administration-console/jdbc/mysql-connector-java-5.1.17.jar /opt/pentaho/biserver-ce/tomcat/lib/mysql-connector-java-5.1.17.jar
 
 COPY config $PENTAHO_HOME/config
 COPY scripts $PENTAHO_HOME/scripts
