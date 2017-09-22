@@ -4,7 +4,7 @@ set -e
 . $PENTAHO_HOME/script/configure.sh
 
 if [ ! -f ".pentaho_dbconfig" ]; then
-  $PENTAHO_HOME/script/setup_db.sh
+  $PENTAHO_HOME/script/setup_postgresql.sh
   touch .pentaho_dbconfig
 fi
 

@@ -16,7 +16,7 @@ ENV PENTAHO_JAVA_HOME=$JAVA_HOME \
 
 # Install Dependences
 RUN apt-get update \
-  && apt-get install -y wget unzip netcat postgresql-client-9.4 mysql-client libapr1-dev libssl-dev libtcnative-1 \
+  && apt-get install -y wget unzip netcat postgresql-client-9.4 libapr1-dev libssl-dev libtcnative-1 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -36,13 +36,6 @@ RUN openssl req -x509 -nodes -days 365 -subj '/CN=sbf.dev' -sha256 -newkey rsa:2
 # Update the postgresql connector version used
 RUN rm -f $PENTAHO_HOME/pentaho-server/tomcate/lib/postgresql*jdbc*.jar \
   && /usr/bin/wget https://jdbc.postgresql.org/download/postgresql-${PGSQL_CONNECTOR_VERSION}.jdbc41.jar -O $PENTAHO_HOME/pentaho-server/tomcat/lib/postgresql-${PGSQL_CONNECTOR_VERSION}.jdbc41.jar
-
-# Update connector version used
-RUN rm -f $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector*.jar \
-  && /usr/bin/wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz -O /tmp/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz \
-  && tar -xzvf /tmp/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz --wildcards */mysql-connector-java-${MYSQL_CONNECTOR_VERSION}-bin.jar -O > $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}-bin.jar \
-  && cp $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}-bin.jar $PENTAHO_HOME/pentaho-server/tomcat/webapps/pentaho/WEB-INF/lib/ \
-  && rm -f /tmp/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz
 
 # Put custom configs in to place
 RUN rm -rf $PENTAHO_HOME/pentaho-server/tomcat/conf/Catalina/* $PENTAHO_HOME/pentaho-server/tomcat/temp/* $PENTAHO_HOME/pentaho-server/tomcat/work/* $PENTAHO_HOME/pentaho-server/tomcat/logs/*
