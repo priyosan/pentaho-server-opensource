@@ -1,0 +1,34 @@
+version: "2.1"
+services:
+  server:
+    image: firespring/pentaho-server:7.1
+    build:
+      context: .
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 5de6339f7826d635d70227521169494c
+      HIB_USER_PASSWORD: 07216751ee867ab10119458b7429004d
+      JCR_USER_PASSWORD: f53d7f4034052fe03d0f84a53253730d
+      PENTAHO_USER_PASSWORD: 9e0efb0adbd04cb05bfb1e4bc4e40b9d
+      PENTAHO_HOST: ${VM_NAME}
+    ports:
+      - 80:8080
+      - 443:8443
+    depends_on:
+      - mysql
+
+#  carte:
+#    image: firespring/pentaho-carte:7.1
+#    build:
+#      context: ./carte
+#    environment:
+#      CARTE_USER: admin
+#      CARTE_PASS: 9eadac42bc2d48ad35747a4180e62a24
+#    ports:
+#      - 8181:8181
+
+  mysql:
+    image: mysql:5.6
+    environment:
+      MYSQL_ROOT_PASSWORD: 5de6339f7826d635d70227521169494c

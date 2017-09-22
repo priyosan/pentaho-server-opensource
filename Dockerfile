@@ -1,45 +1,59 @@
+FROM java:8
 
-
-FROM java:7
-
-
-MAINTAINER Wellington Marinho wpmarinho@globo.com
+MAINTAINER Firespring info.dev@firespring.com
 
 # Init ENV
-ENV BISERVER_VERSION 6.1
-ENV BISERVER_TAG 6.1.0.1-196
-
-ENV PENTAHO_HOME /opt/pentaho
+ENV BISERVER_VERSION=7.1 \
+    BISERVER_TAG=7.1.0.0-12 \
+    MYSQL_CONNECTOR_VERSION=5.1.44 \
+    PGSQL_CONNECTOR_VERSION=9.3-1104
 
 # Apply JAVA_HOME
 RUN . /etc/environment
-ENV PENTAHO_JAVA_HOME $JAVA_HOME
-ENV PENTAHO_JAVA_HOME /usr/lib/jvm/java-1.7.0-openjdk-amd64
-ENV JAVA_HOME /usr/lib/jvm/java-1.7.0-openjdk-amd64
+ENV PENTAHO_JAVA_HOME=$JAVA_HOME \
+    PENTAHO_JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64 \
+    JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
 
 # Install Dependences
-RUN apt-get update; apt-get install zip netcat -y; \
-    apt-get install wget unzip git postgresql-client-9.4 vim -y; \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*; \
-    curl -O https://bootstrap.pypa.io/get-pip.py; \
-    python get-pip.py; \
-    pip install awscli; \
-    rm -f get-pip.py
+RUN apt-get update \
+  && apt-get install -y wget unzip netcat postgresql-client-9.4 mysql-client libapr1-dev libssl-dev libtcnative-1 \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN mkdir ${PENTAHO_HOME}; useradd -s /bin/bash -d ${PENTAHO_HOME} pentaho; chown pentaho:pentaho ${PENTAHO_HOME}
-
-USER pentaho
+ENV PENTAHO_HOME=/opt/pentaho
+RUN mkdir ${PENTAHO_HOME} && useradd -s /bin/bash -d ${PENTAHO_HOME} pentaho && chown pentaho:pentaho ${PENTAHO_HOME}
 
 # Download Pentaho BI Server
-RUN /usr/bin/wget --progress=dot:giga http://downloads.sourceforge.net/project/pentaho/Business%20Intelligence%20Server/${BISERVER_VERSION}/biserver-ce-${BISERVER_TAG}.zip -O /tmp/biserver-ce-${BISERVER_TAG}.zip; \
-    /usr/bin/unzip -q /tmp/biserver-ce-${BISERVER_TAG}.zip -d  $PENTAHO_HOME; \
-    rm -f /tmp/biserver-ce-${BISERVER_TAG}.zip $PENTAHO_HOME/biserver-ce/promptuser.sh; \
-    sed -i -e 's/\(exec ".*"\) start/\1 run/' $PENTAHO_HOME/biserver-ce/tomcat/bin/startup.sh; \
-    chmod +x $PENTAHO_HOME/biserver-ce/start-pentaho.sh
+RUN /usr/bin/wget https://downloads.sourceforge.net/project/pentaho/Business%20Intelligence%20Server/${BISERVER_VERSION}/pentaho-server-ce-${BISERVER_TAG}.zip -O /tmp/pentaho-server-ce-${BISERVER_TAG}.zip \
+  && /usr/bin/unzip -q /tmp/pentaho-server-ce-${BISERVER_TAG}.zip -d $PENTAHO_HOME \
+  && rm -f /tmp/pentaho-server-ce-${BISERVER_TAG}.zip $PENTAHO_HOME/pentaho-server/promptuser.sh \
+  && sed -i -e 's/\(exec ".*"\) start/\1 run/' $PENTAHO_HOME/pentaho-server/tomcat/bin/startup.sh \
+  && chmod +x $PENTAHO_HOME/pentaho-server/start-pentaho.sh
 
-COPY config $PENTAHO_HOME/config
-COPY scripts $PENTAHO_HOME/scripts
+# Add a default/dummy cert for https
+RUN openssl req -x509 -nodes -days 365 -subj '/CN=sbf.dev' -sha256 -newkey rsa:2048 -keyout $PENTAHO_HOME/pentaho-server/tomcat/conf/pentaho.key -out $PENTAHO_HOME/pentaho-server/tomcat/conf/pentaho.crt
 
-WORKDIR /opt/pentaho 
-EXPOSE 8080 
-CMD ["sh", "scripts/run.sh"]
+# Update the postgresql connector version used
+RUN rm -f $PENTAHO_HOME/pentaho-server/tomcate/lib/postgresql*jdbc*.jar \
+  && /usr/bin/wget https://jdbc.postgresql.org/download/postgresql-${PGSQL_CONNECTOR_VERSION}.jdbc41.jar -O $PENTAHO_HOME/pentaho-server/tomcat/lib/postgresql-${PGSQL_CONNECTOR_VERSION}.jdbc41.jar
+
+# Update connector version used
+RUN rm -f $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector*.jar \
+  && /usr/bin/wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz -O /tmp/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz \
+  && tar -xzvf /tmp/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz --wildcards */mysql-connector-java-${MYSQL_CONNECTOR_VERSION}-bin.jar -O > $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}-bin.jar \
+  && cp $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}-bin.jar $PENTAHO_HOME/pentaho-server/tomcat/webapps/pentaho/WEB-INF/lib/ \
+  && rm -f /tmp/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz
+
+# Put custom configs in to place
+RUN rm -rf $PENTAHO_HOME/pentaho-server/tomcat/conf/Catalina/* $PENTAHO_HOME/pentaho-server/tomcat/temp/* $PENTAHO_HOME/pentaho-server/tomcat/work/* $PENTAHO_HOME/pentaho-server/tomcat/logs/*
+RUN ls -ltra $PENTAHO_HOME
+COPY config/postgresql $PENTAHO_HOME
+RUN ls -ltra $PENTAHO_HOME
+COPY script $PENTAHO_HOME/script
+
+RUN chown -R pentaho:pentaho $PENTAHO_HOME
+
+USER pentaho
+WORKDIR $PENTAHO_HOME
+EXPOSE 8080
+CMD ["./script/run.sh"]

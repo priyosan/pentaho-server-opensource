@@ -1,0 +1,37 @@
+version: "2.1"
+services:
+  server:
+    image: firespring/pentaho-server:7.1
+    build:
+      context: .
+    environment:
+      PGSQL_HOST: postgresql
+      PGSQL_USER: pgadmin
+      PGSQL_DATABASE: postgres
+      PGSQL_PASSWORD: 8e18d593d1a8c82463e4f1aaddf908eb
+      HIB_USER_PASSWORD: 13a507709846a253a28a92966f59e3b0
+      JCR_USER_PASSWORD: d6c8510b2051cbe397e738482bc58c13
+      PENTAHO_USER_PASSWORD: 3c671bcbcf24cde938ed15de62d928f9
+      PENTAHO_HOST: ${VM_NAME}
+    ports:
+      - 80:8080
+      - 443:8443
+    depends_on:
+      - postgresql
+
+#  carte:
+#    image: firespring/pentaho-carte:7.1
+#    build:
+#      context: ./carte
+#    environment:
+#      CARTE_USER: admin
+#      CARTE_PASS: 9eadac42bc2d48ad35747a4180e62a24
+#    ports:
+#      - 8181:8181
+
+  postgresql:
+    image: postgres:9.6
+    environment:
+      POSTGRES_PASSWORD: 8e18d593d1a8c82463e4f1aaddf908eb
+      POSTGRES_DB: postgres
+      POSTGRES_USER: pgadmin
