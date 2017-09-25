@@ -5,7 +5,6 @@ MAINTAINER Firespring info.dev@firespring.com
 # Init ENV
 ENV BISERVER_VERSION=7.1 \
     BISERVER_TAG=7.1.0.0-12 \
-    MYSQL_CONNECTOR_VERSION=5.1.44 \
     PGSQL_CONNECTOR_VERSION=9.3-1104
 
 # Apply JAVA_HOME
@@ -39,11 +38,10 @@ RUN rm -f $PENTAHO_HOME/pentaho-server/tomcate/lib/postgresql*jdbc*.jar \
 
 # Put custom configs in to place
 RUN rm -rf $PENTAHO_HOME/pentaho-server/tomcat/conf/Catalina/* $PENTAHO_HOME/pentaho-server/tomcat/temp/* $PENTAHO_HOME/pentaho-server/tomcat/work/* $PENTAHO_HOME/pentaho-server/tomcat/logs/*
-RUN ls -ltra $PENTAHO_HOME
 COPY config/postgresql $PENTAHO_HOME
-RUN ls -ltra $PENTAHO_HOME
 COPY script $PENTAHO_HOME/script
 
+# Make sure everything is owned by the pentaho user
 RUN chown -R pentaho:pentaho $PENTAHO_HOME
 
 USER pentaho

@@ -1,6 +1,10 @@
 DROP DATABASE IF EXISTS sampledata;
 
-CREATE DATABASE sampledata WITH OWNER = pentaho_user ENCODING = 'UTF8';
+
+CREATE DATABASE sampledata ENCODING = 'UTF8' TABLESPACE = pg_default;
+ALTER DATABASE sampledata OWNER TO pentaho_user;
+GRANT ALL PRIVILEGES ON DATABASE sampledata to pentaho_user;
+
 \connect sampledata
 
 -- DROP EXISTING TABLES, IN ORDER OF RI

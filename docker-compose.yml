@@ -32,6 +32,6 @@ services:
   postgresql:
     image: postgres:9.6
     environment:
-      POSTGRES_PASSWORD: 8e18d593d1a8c82463e4f1aaddf908eb
       POSTGRES_DB: postgres
       POSTGRES_USER: pgadmin
+      POSTGRES_PASSWORD: 8e18d593d1a8c82463e4f1aaddf908eb
