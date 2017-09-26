@@ -1,9 +1,8 @@
 DROP DATABASE IF EXISTS sampledata;
 
-CREATE ROLE pentaho_user WITH password '@@pentaho_user_password@@' LOGIN;
-CREATE DATABASE sampledata ENCODING = 'UTF8' TABLESPACE = pg_default;
-ALTER DATABASE sampledata OWNER TO pentaho_user;
-GRANT ALL PRIVILEGES ON DATABASE sampledata to pentaho_user;
+drop user if exists pentaho_user;
+CREATE USER pentaho_user PASSWORD '@@pentaho_user_password@@';
+CREATE DATABASE sampledata WITH OWNER = pentaho_user ENCODING = 'UTF8' TABLESPACE = pg_default;
 
 \connect sampledata
 
