@@ -3,16 +3,12 @@
 --
 
 -- \connect postgres postgres
-ALTER DATABASE hibernate  OWNER TO awsbiuser;
 
 drop database if exists hibernate;
---drop user if exists hibuser;
-drop role if exists hibuser;
---CREATE USER hibuser PASSWORD '@@hib_user_password@@';
-CREATE role hibuser PASSWORD '@@hib_user_password@@' login;
+drop user if exists hibuser;
 
-CREATE DATABASE hibernate ENCODING = 'UTF8' TABLESPACE = pg_default;
+CREATE USER hibuser PASSWORD '@@hib_user_password@@';
 
-ALTER DATABASE hibernate  OWNER TO hibuser;
+CREATE DATABASE hibernate WITH OWNER = hibuser ENCODING = 'UTF8' TABLESPACE = pg_default;
 
 GRANT ALL PRIVILEGES ON DATABASE hibernate to hibuser;

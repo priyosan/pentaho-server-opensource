@@ -5,13 +5,10 @@
 -- \connect postgres postgres
 
 drop database if exists jackrabbit;
---drop user if exists jcr_user;
-drop role if exists jcr_user;
+drop user if exists jcr_user;
 
---CREATE USER jcr_user PASSWORD '@@jcr_user_password@@';
-create role jcr_user with password '@@jcr_user_password@@' login;
+CREATE USER jcr_user PASSWORD '@@jcr_user_password@@';
 
-CREATE DATABASE jackrabbit ENCODING = 'UTF8' TABLESPACE = pg_default;
-ALTER DATABASE jackrabbit  OWNER TO jcr_user;
+CREATE DATABASE jackrabbit WITH OWNER = jcr_user ENCODING = 'UTF8' TABLESPACE = pg_default;
 
 GRANT ALL PRIVILEGES ON DATABASE jackrabbit to jcr_user;
