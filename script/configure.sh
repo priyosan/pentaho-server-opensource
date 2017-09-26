@@ -8,6 +8,7 @@ export pgsql_database=${PGSQL_DATABASE:-postgres}
 export hib_user_password=${HIB_USER_PASSWORD:-$(openssl rand -hex 16)}
 export jcr_user_password=${JCR_USER_PASSWORD:-$(openssl rand -hex 16)}
 export pentaho_user_password=${PENTAHO_USER_PASSWORD:-$(openssl rand -hex 16)}
+export pentaho_admin_user_password=${PENTAHO_ADMIN_USER_PASSWORD:-$(openssl rand -hex 16)}
 
 find \
   ${PENTAHO_HOME}/pentaho-server/data \
@@ -24,6 +25,7 @@ do
     -e "s/@@hib_user_password@@/${hib_user_password}/g" \
     -e "s/@@jcr_user_password@@/${jcr_user_password}/g" \
     -e "s/@@pentaho_user_password@@/${pentaho_user_password}/g" \
+    -e "s/@@pentaho_admin_user_password@@/${pentaho_admin_user_password}/g" \
     -e "s/login-show-sample-users-hint>true/login-show-sample-users-hint>false/g" \
     "${filename}"
 done
