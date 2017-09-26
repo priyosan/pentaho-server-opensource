@@ -1,12 +1,11 @@
-FROM java:8
+FROM openjdk:8-jre
 
 MAINTAINER Firespring info.dev@firespring.com
 
 # Init ENV
 ENV BISERVER_VERSION=7.1 \
     BISERVER_TAG=7.1.0.0-12 \
-    MYSQL_CONNECTOR_VERSION=5.1.44 \
-    PGSQL_CONNECTOR_VERSION=9.3-1104
+    MYSQL_CONNECTOR_VERSION=5.1.44
 
 # Apply JAVA_HOME
 RUN . /etc/environment
@@ -16,7 +15,7 @@ ENV PENTAHO_JAVA_HOME=$JAVA_HOME \
 
 # Install Dependences
 RUN apt-get update \
-  && apt-get install -y wget unzip netcat mysql-client libapr1-dev libssl-dev libtcnative-1 \
+  && apt-get install -y wget unzip netcat libapr1-dev libssl-dev libtcnative-1 mysql-client \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -42,11 +41,10 @@ RUN rm -f $PENTAHO_HOME/pentaho-server/tomcat/lib/mysql-connector*.jar \
 
 # Put custom configs in to place
 RUN rm -rf $PENTAHO_HOME/pentaho-server/tomcat/conf/Catalina/* $PENTAHO_HOME/pentaho-server/tomcat/temp/* $PENTAHO_HOME/pentaho-server/tomcat/work/* $PENTAHO_HOME/pentaho-server/tomcat/logs/*
-RUN ls -ltra $PENTAHO_HOME
 COPY config/mysql5 $PENTAHO_HOME
-RUN ls -ltra $PENTAHO_HOME
 COPY script $PENTAHO_HOME/script
 
+# Make sure everything is owned by the pentaho user
 RUN chown -R pentaho:pentaho $PENTAHO_HOME
 
 USER pentaho
